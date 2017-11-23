@@ -21,10 +21,12 @@ type Configuration struct {
 	URL			string
 }
 
+var configuration Configuration
+
 func main() {
 	file, _ := os.Open("conf.json")
 	decoder := json.NewDecoder(file)
-	configuration := Configuration{}
+	configuration = Configuration{}
 	err := decoder.Decode(&configuration)
 	alarm := Alarm{ thresholds: configuration.Threshold }
 	if err != nil {
@@ -67,15 +69,12 @@ func main() {
 }
 
 func sendMail(to string, from string, subject string, body string) {
-	dom := os.Getenv("MAIL_DOMAIN")
-	key := os.Getenv("MAIL_KEY")
-	secret := os.Getenv("MAIL_SECRET")
-	if len(dom) < 1 || len(key) < 1 || len(secret) < 1 {
+	if len(configuration.MailDomain) < 1 || len(configuration.MailKey) < 1 || len(configuration.MailSecret) < 1 {
 		log.Println("Missing env vars for sending mail.")
 		return
 	}
 	log.Println("Sending new mail ...")
-	mg := mailgun.NewMailgun(dom, secret, key)
+	mg := mailgun.NewMailgun(configuration.MailDomain, configuration.MailSecret, configuration.MailKey)
 	message := mailgun.NewMessage(
 		from,
 		subject,
