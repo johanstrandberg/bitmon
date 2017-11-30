@@ -24,10 +24,17 @@ type Configuration struct {
 var configuration Configuration
 
 func main() {
+	f, err := os.OpenFile("log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	defer f.Close()
+	err = nil
+	log.SetOutput(f)
 	file, _ := os.Open("conf.json")
 	decoder := json.NewDecoder(file)
 	configuration = Configuration{}
-	err := decoder.Decode(&configuration)
+	err = decoder.Decode(&configuration)
 	alarm := Alarm{ thresholds: configuration.Threshold }
 	if err != nil {
 	  fmt.Println("error:", err)
